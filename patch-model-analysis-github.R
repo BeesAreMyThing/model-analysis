@@ -202,11 +202,26 @@ hist_it(dat=by_bee[which(by_bee$patch_value == 100),],
 	x_name="net_lifetime_contribution",
 	xlab="Net lifetime contribution (J)", main="High patch value", rounder=5000)
 
+
+dev.off()
+png("lifetime contribution histograms.png") 
+	hist_it(dat=by_bee[which(by_bee$patch_value == 25),], 
+		x_name="net_lifetime_contribution",
+		xlab="Net lifetime contribution (J)", main="Low patch value", rounder=1000)
+dev.off()
+
+
 ##Relative contribution
 rel_tab = sumTab(rel_net_lifetime_contribution ~ enviroment_type + patch_value + metab,
 	data=by_bee)
 draw_it(rel_tab, "rel_net_lifetime_contribution.m", "patch_value", TRUE,
 		xlab="Patch value (J)", ylab="Relative net lifetime contribution")
+
+dev.off()
+png("relative contribution line plot.png") 
+	draw_it(rel_tab, "rel_net_lifetime_contribution.m", "patch_value", TRUE,
+			xlab="Patch value (J)", ylab="Relative net lifetime contribution")
+dev.off()
 
 ## Sucess rate
 sucessTab = sumTab(sucess_rate ~ enviroment_type + patch_value + metab,
@@ -224,29 +239,28 @@ hist_it(dat=by_bee[which(by_bee$patch_value == 100),], x_name="sucess_rate",
 ###Stats
 stepAIC(glm(net_lifetime_contribution ~  (enviroment_type + patch_value + metab)^3,
 	data=by_bee, family="gaussian"))
-mod1 = glm(formula = net_lifetime_contribution ~ enviroment_type + patch_value + 
-    metab + enviroment_type:patch_value + enviroment_type:metab + 
-    patch_value:metab, family = "gaussian", data = by_bee) 
-summary(mod1)#AIC 80804
+mod1 =  glm(formula = net_lifetime_contribution ~ (enviroment_type + 
+    patch_value + metab)^3, family = "gaussian", data = by_bee)
+summary(mod1)  # AIC 53194
 Anova(mod1, type=3)
 
 
 stepAIC(glm(trip_count ~  (enviroment_type + patch_value + metab)^3,
 	data=by_bee, family="poisson"))
-mod2 = glm(formula = trip_count ~ patch_value + metab + patch_value:metab, 
-    family = "poisson", data = by_bee)
-summary(mod2) #AIC 26469
+mod2 = glm(formula = trip_count ~ enviroment_type + patch_value + metab + 
+    patch_value:metab, family = "poisson", data = by_bee)
+summary(mod2)  # AIC 17390
 Anova(mod2, type=3)
 
 
 first_three = by_trip[which(by_trip$trip_num <= 3),]
 mod3 = glmer(if_found_patch ~ (enviroment_type + metab)^2
 	+ (1|bee_id), data=first_three, family="binomial")
-summary(mod3) #AIC 11583.0, BIC 11620
+summary(mod3) #AIC 7596.5, BIC 7631.4
 Anova(mod3, type=3)
 
 mod4 = glmer(if_found_patch ~ enviroment_type + metab
 	+ (1|bee_id), data=first_three, family="binomial")
-summary(mod4) #AIC 11583.4, BIC 11612.9
+summary(mod4) #AIC 7594.6, BIC 7622.5
 Anova(mod4, type=3)
 
